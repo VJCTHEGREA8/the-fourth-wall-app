@@ -108,7 +108,6 @@ const AdminPanel = ({ user }) => {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        // TEST: Temporarily removed orderBy to check for indexing issues
         const articlesQuery = query(collection(db, 'articles'));
         const unsubscribeArticles = onSnapshot(articlesQuery, (snapshot) => {
             setArticles(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -117,7 +116,6 @@ const AdminPanel = ({ user }) => {
             setError("Could not fetch articles. Check Firestore rules and collection name.");
         });
 
-        // TEST: Temporarily removed orderBy to check for indexing issues
         const videosQuery = query(collection(db, 'videos'));
         const unsubscribeVideos = onSnapshot(videosQuery, (snapshot) => {
             setVideos(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -282,18 +280,37 @@ const PublicWebsite = ({ setPage }) => {
     const [videos, setVideos] = useState([]);
 
     useEffect(() => {
-        // TEST: Temporarily removed orderBy to check for indexing issues
-        const articlesQuery = query(collection(db, 'articles'));
+        console.log("Setting up Firestore listeners...");
+
         const videosQuery = query(collection(db, 'videos'));
         
-        const unsubArticles = onSnapshot(articlesQuery, (snapshot) => {
-            setArticles(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        });
         const unsubVideos = onSnapshot(videosQuery, (snapshot) => {
-            setVideos(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            console.log(`Videos snapshot received. Found ${snapshot.size} documents.`);
+            if (snapshot.empty) {
+                console.log("The 'videos' collection is empty or query returned no results.");
+            }
+            const videosData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            console.log("Videos data:", videosData);
+            setVideos(videosData);
+        }, (error) => {
+            console.error("Error fetching videos:", error);
+        });
+
+        const articlesQuery = query(collection(db, 'articles'));
+        const unsubArticles = onSnapshot(articlesQuery, (snapshot) => {
+            console.log(`Articles snapshot received. Found ${snapshot.size} documents.`);
+            if (snapshot.empty) {
+                console.log("The 'articles' collection is empty or query returned no results.");
+            }
+            const articlesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            console.log("Articles data:", articlesData);
+            setArticles(articlesData);
+        }, (error) => {
+            console.error("Error fetching articles:", error);
         });
 
         return () => {
+            console.log("Cleaning up Firestore listeners.");
             unsubArticles();
             unsubVideos();
         };
