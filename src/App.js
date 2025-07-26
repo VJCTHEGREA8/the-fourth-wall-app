@@ -45,7 +45,6 @@ const ArticleCard = ({ article, isAdmin, onDelete, onEdit }) => (
             <p className="text-sm text-brand-gray mb-2">{article.category}</p>
             <h3 className="text-xl font-bold mb-3 text-white">{article.title}</h3>
             <p className="text-brand-gray mb-4 flex-grow">{article.description}</p>
-            {/* FIX: Changed from an <a> tag to a <button> to resolve accessibility error */}
             <button className="font-semibold text-brand-gold hover:text-yellow-400 mt-auto text-left w-fit">Read More &rarr;</button>
             {isAdmin && (
                 <div className="mt-4 flex space-x-2">
@@ -81,7 +80,6 @@ const VideoCard = ({ video, isAdmin, onDelete, onEdit }) => {
         <div className="bg-brand-deep-blue rounded-lg overflow-hidden card-glow border border-gray-800">
             <div className="aspect-w-16 aspect-h-9">
                 {embedUrl ? (
-                    // FIX: Added a unique title to the iframe for accessibility
                     <iframe title={video.title || 'YouTube Video'} src={embedUrl} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="w-full h-full"></iframe>
                 ) : (
                     <div className="w-full h-full bg-black flex items-center justify-center">
@@ -111,7 +109,8 @@ const AdminPanel = ({ user }) => {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        const articlesQuery = query(collection(db, 'articles'), orderBy('timestamp', 'desc'));
+        // TEST: Temporarily removed orderBy to check for indexing issues
+        const articlesQuery = query(collection(db, 'articles'));
         const unsubscribeArticles = onSnapshot(articlesQuery, (snapshot) => {
             setArticles(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         }, (err) => {
@@ -119,7 +118,8 @@ const AdminPanel = ({ user }) => {
             setError("Could not fetch articles. Check Firestore rules and collection name.");
         });
 
-        const videosQuery = query(collection(db, 'videos'), orderBy('timestamp', 'desc'));
+        // TEST: Temporarily removed orderBy to check for indexing issues
+        const videosQuery = query(collection(db, 'videos'));
         const unsubscribeVideos = onSnapshot(videosQuery, (snapshot) => {
             setVideos(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         }, (err) => {
@@ -159,7 +159,6 @@ const AdminPanel = ({ user }) => {
     };
 
     const handleDelete = async (id, collectionName) => {
-        // A simple confirmation dialog. In a real app, use a custom modal.
         if (window.confirm('Are you sure you want to delete this item?')) {
             try {
                 await deleteDoc(doc(db, collectionName, id));
@@ -284,8 +283,9 @@ const PublicWebsite = ({ setPage }) => {
     const [videos, setVideos] = useState([]);
 
     useEffect(() => {
-        const articlesQuery = query(collection(db, 'articles'), orderBy('timestamp', 'desc'));
-        const videosQuery = query(collection(db, 'videos'), orderBy('timestamp', 'desc'));
+        // TEST: Temporarily removed orderBy to check for indexing issues
+        const articlesQuery = query(collection(db, 'articles'));
+        const videosQuery = query(collection(db, 'videos'));
         
         const unsubArticles = onSnapshot(articlesQuery, (snapshot) => {
             setArticles(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
