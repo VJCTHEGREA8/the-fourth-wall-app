@@ -11,7 +11,6 @@ import {
     getFirestore, 
     collection, 
     addDoc, 
-    getDocs, 
     onSnapshot,
     doc,
     deleteDoc,
@@ -21,9 +20,7 @@ import {
     serverTimestamp
 } from 'firebase/firestore';
 
-// --- IMPORTANT FIREBASE SETUP ---
-// This is now connected to your Firebase project.
-
+// --- Firebase Config ---
 const firebaseConfig = {
   apiKey: "AIzaSyDqfTeMNCIOyiJ6ETlIbATfzVd-XQR1iUk",
   authDomain: "thefourthwall-cd8c2.firebaseapp.com",
@@ -48,7 +45,8 @@ const ArticleCard = ({ article, isAdmin, onDelete, onEdit }) => (
             <p className="text-sm text-brand-gray mb-2">{article.category}</p>
             <h3 className="text-xl font-bold mb-3 text-white">{article.title}</h3>
             <p className="text-brand-gray mb-4 flex-grow">{article.description}</p>
-            <a href="#" onClick={(e) => e.preventDefault()} className="font-semibold text-brand-gold hover:text-yellow-400 mt-auto">Read More &rarr;</a>
+            {/* FIX: Changed from an <a> tag to a <button> to resolve accessibility error */}
+            <button className="font-semibold text-brand-gold hover:text-yellow-400 mt-auto text-left w-fit">Read More &rarr;</button>
             {isAdmin && (
                 <div className="mt-4 flex space-x-2">
                     <button onClick={() => onEdit(article)} className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm">Edit</button>
@@ -83,7 +81,8 @@ const VideoCard = ({ video, isAdmin, onDelete, onEdit }) => {
         <div className="bg-brand-deep-blue rounded-lg overflow-hidden card-glow border border-gray-800">
             <div className="aspect-w-16 aspect-h-9">
                 {embedUrl ? (
-                    <iframe src={embedUrl} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="w-full h-full"></iframe>
+                    // FIX: Added a unique title to the iframe for accessibility
+                    <iframe title={video.title || 'YouTube Video'} src={embedUrl} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="w-full h-full"></iframe>
                 ) : (
                     <div className="w-full h-full bg-black flex items-center justify-center">
                         <p className="text-brand-gray">Invalid YouTube URL</p>
@@ -160,6 +159,7 @@ const AdminPanel = ({ user }) => {
     };
 
     const handleDelete = async (id, collectionName) => {
+        // A simple confirmation dialog. In a real app, use a custom modal.
         if (window.confirm('Are you sure you want to delete this item?')) {
             try {
                 await deleteDoc(doc(db, collectionName, id));
